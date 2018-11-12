@@ -12,7 +12,7 @@ const { BotFrameworkAdapter, MemoryStorage, ConversationState } = require('botbu
 const { BotConfiguration } = require('botframework-config');
 
 // This bot's main dialog.
-const { MyBot } = require('./bot');
+const { PizzaBot } = require('./bot');
 
 // Read botFilePath and botFileSecret from .env file
 // Note: Ensure you have a .env file and include botFilePath and botFileSecret.
@@ -82,7 +82,7 @@ const memoryStorage = new MemoryStorage();
 const conversationState = new ConversationState(memoryStorage);
 
 // Create the main dialog.
-const myBot = new MyBot(conversationState);
+const myBot = new PizzaBot(conversationState);
 
 // Catch-all for errors.
 adapter.onTurnError = async (context, error) => {

@@ -6,7 +6,7 @@ const { ActivityTypes } = require('botbuilder');
 // Turn counter property
 const TURN_COUNTER_PROPERTY = 'turnCounterProperty';
 
-class MyBot {
+class PizzaBot {
   /**
    *
    * @param {ConversationState} conversation state object
@@ -38,4 +38,4 @@ class MyBot {
   }
 }
 
-module.exports.MyBot = MyBot;
+module.exports.PizzaBot = PizzaBot;
