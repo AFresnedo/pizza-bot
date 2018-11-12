@@ -3,7 +3,7 @@
 
 const { ActivityTypes } = require('botbuilder');
 
-// Turn counter property
+// Name given to turn counter property
 const TURN_COUNTER_PROPERTY = 'turnCounterProperty';
 
 class PizzaBot {
@@ -12,9 +12,9 @@ class PizzaBot {
    * @param {ConversationState} conversation state object
    */
   constructor(conversationState) {
-    // Creates a new state accessor property.
-    // See https://aka.ms/about-bot-state-accessors to learn more about the bot state and state accessors.
+    // Create a turn counter property and add it to given conversation state
     this.countProperty = conversationState.createProperty(TURN_COUNTER_PROPERTY);
+    // Add given conversation state to this PizzaBot instance
     this.conversationState = conversationState;
   }
   /**
