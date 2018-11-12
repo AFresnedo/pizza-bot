@@ -3,17 +3,24 @@
 
 const { ActivityTypes } = require('botbuilder');
 
-// Name given to turn counter property
+/**
+ *
+ * Property names for all PizzaBot states
+ */
 const TURN_COUNTER_PROPERTY = 'turnCounterProperty';
+const WELCOMED_USER = 'welcomedUserProperty';
 
 class PizzaBot {
   /**
    *
    * @param {ConversationState} conversation state object
+   * @param {UserState} state containing user-specific information
    */
   constructor(conversationState) {
     // Create a turn counter property and add it to given conversation state
     this.countProperty = conversationState.createProperty(TURN_COUNTER_PROPERTY);
+    // Create a property to track if a user has been greeted
+    this.welcomedProperty = conversationState.createProperty(WELCOMED_USER);
     // Add given conversation state to this PizzaBot instance
     this.conversationState = conversationState;
   }
