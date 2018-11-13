@@ -45,14 +45,14 @@ class PizzaBot {
         // Perform convo update logic, if that type of event is detected
         } else if (turnContext.activity.type === ActivityTypes.ConversationUpdate) {
             // Identify if a user is new to the bot and, if so, mark them as no longer new
-            const isNew = await this.newUserProperty.get(turnContext);
-            if (isNew) {
-                await this.newUserProperty.set(turnContext, false);
+            const previousUser = await this.newUserProperty.get(turnContext);
+            if (!previousUser) {
+                await this.newUserProperty.set(turnContext, true);
             }
             // For every member in conversation: welcome them, if they just joined
             for (let e of turnContext.activity.membersAdded) {
                 // TODO prompt with first time welcome msg, if user's first time in convo
-                if (isNew && (e.id !== turnContext.activity.recipient.id)) {
+                if (!previousUser && (e.id !== turnContext.activity.recipient.id)) {
                     await turnContext.sendActivity(`Welcome ${e.name}! Since this is your first `
                         + 'time using this bot, feel free to type "help" for a quick introduction.')
                 }
@@ -60,7 +60,7 @@ class PizzaBot {
                 // NOTE that this conditional relies on "join channel" conversationUpdate activity
                 // not being sent to the member joining channel
                 else if (e.id !== turnContext.activity.recipient.id) {
-                  await turnContext.sendActivity(`Welcome back ${e.name}!`);
+                  await turnContext.sendActivity(`Greetings ${e.name}!`);
                 }
                 else {
                     await turnContext.sendActivity('Unhandled Conversation Update Detected');
