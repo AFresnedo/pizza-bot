@@ -8,7 +8,6 @@ const { ActivityTypes } = require('botbuilder');
  * Property names for all PizzaBot states
  */
 const NEW_USER = 'newUserProperty';
-const GREETED_USER = 'greetUserProperty';
 const TURN_COUNT = 'turnCountProperty';
 
 class PizzaBot {
@@ -23,8 +22,6 @@ class PizzaBot {
         this.newUserProperty = userState.createProperty(NEW_USER);
         // Add given user state to this PizzaBot instance
         this.userState = userState;
-        // Create a boolean to track if a user has been greeted in convo yet
-        this.greetProperty = conversationState.createProperty(GREETED_USER);
         // Create an integer to track turn count
         this.turnCountProperty = conversationState.createProperty(TURN_COUNT);
         // Add given conversation state to this PizzaBot instance
@@ -37,7 +34,7 @@ class PizzaBot {
     async onTurn(turnContext) {
         // Perform message handling logic, if that type of event is detected
         if (turnContext.activity.type === ActivityTypes.Message) {
-            // TODO determine specifics of what is being read here
+            // Get cached property of conversation state relevant to turnContext
             let count = await this.turnCountProperty.get(turnContext)
             // If count is undefined: set to 1, else increment by 1
             count = count === undefined ? 1 : ++count;
@@ -47,15 +44,23 @@ class PizzaBot {
             await this.turnCountProperty.set(turnContext, count);
         // Perform convo update logic, if that type of event is detected
         } else if (turnContext.activity.type === ActivityTypes.ConversationUpdate) {
+            // Identify if a user is new to the bot and, if so, mark them as no longer new
+            const isNew = await this.newUserProperty.get(turnContext);
+            if (isNew) {
+                await this.newUserProperty.set(turnContext, false);
+            }
             // For every member in conversation: welcome them, if they just joined
             for (let e of turnContext.activity.membersAdded) {
-                // TODO prompt with first time welcome msg, if user is a first time user
-                if (false) {}
-                // Else greet them, if they are simply joining convo
-                // NOTE that conditional relies on conversationUpdate activity
-                // not being sent to member joining channel
+                // TODO prompt with first time welcome msg, if user's first time in convo
+                if (isNew && (e.id !== turnContext.activity.recipient.id)) {
+                    await turnContext.sendActivity(`Welcome ${e.name}! Since this is your first `
+                        + 'time using this bot, feel free to type "help" for a quick introduction.')
+                }
+                // Else greet them, if they are joining the conversation
+                // NOTE that this conditional relies on "join channel" conversationUpdate activity
+                // not being sent to the member joining channel
                 else if (e.id !== turnContext.activity.recipient.id) {
-                    await turnContext.sendActivity('Thanks for coming back!');
+                  await turnContext.sendActivity(`Welcome back ${e.name}!`);
                 }
                 else {
                     await turnContext.sendActivity('Unhandled Conversation Update Detected');

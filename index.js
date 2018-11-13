@@ -83,9 +83,8 @@ const conversationState = new ConversationState(memoryStorage);
 // Create user state with in-memory storage provider.
 const userState = new UserState(memoryStorage);
 // Use BotStateSet middleware to handle multiple BotState instances
-// NOTE that using BotState as middleware allows for automatic loading (before
-// turn) and saving (after turn) so that work can be performed on the cached
-// instances during the turn
+// NOTE that using BotState as middleware allows for automatic loading (before turn) and saving
+// (after turn) so that work can be performed on the cached instances during the turn
 adapter.use(new AutoSaveStateMiddleware(conversationState, userState));
 
 // Create the main dialog, passing it any states it has access to
@@ -108,8 +107,8 @@ adapter.onTurnError = async (context, error) => {
 // NOTE that each request can probably be considered a turn
 server.post('/api/messages', (req, res) => {
     adapter.processActivity(req, res, async (context) => {
-        // NOTE that you can perform pre-bot-turn actions on state here,
-        // by "get"ing the cached instance that was loaded during middleware
+        // NOTE that you can perform pre-bot-turn actions on state here, by "get"ing the cached
+        // instance that was loaded during middleware
 
         // Perform bot turn
         // Route to main dialog.
