@@ -51,7 +51,6 @@ class PizzaBot {
             for (let e of turnContext.activity.membersAdded) {
                 // TODO Prompt with welcome message, if user is a first time user
                 // TODO Else greet them, if they are simply joining convo
-
             }
             await turnContext.sendActivity('Conversation Updated');
         } else {
