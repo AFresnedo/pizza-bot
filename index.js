@@ -6,7 +6,7 @@ const restify = require('restify');
 
 // Import required bot services.
 // See https://aka.ms/bot-services to learn more about the different parts of a bot.
-const { BotFrameworkAdapter, MemoryStorage, ConversationState, UserState } = require('botbuilder');
+const { AutoSaveStateMiddleware, BotFrameworkAdapter, MemoryStorage, ConversationState, UserState } = require('botbuilder');
 
 // Import required bot configuration.
 const { BotConfiguration } = require('botframework-config');
@@ -82,15 +82,20 @@ const memoryStorage = new MemoryStorage();
 const conversationState = new ConversationState(memoryStorage);
 // Create user state with in-memory storage provider.
 const userState = new UserState(memoryStorage);
+// Use BotStateSet middleware to handle multiple BotState instances
+// NOTE that using BotState as middleware allows for automatic loading (before
+// turn) and saving (after turn) so that work can be performed on the cached
+// instances during the turn
+adapter.use(new AutoSaveStateMiddleware(conversationState, userState));
 
-// Create the main dialog.
+// Create the main dialog, passing it any states it has access to
 const pizzaBot = new PizzaBot(conversationState, userState);
 
 // Catch-all for errors.
 adapter.onTurnError = async (context, error) => {
     // This check writes out errors to console log .vs. app insights.
     console.error(`\n [onTurnError]: ${error}`);
-    // Send a message to the user
+    // Send a message to the channel
     context.sendActivity(`Oops. Something went wrong!`);
     // Clear out state
     await conversationState.load(context);
@@ -100,10 +105,17 @@ adapter.onTurnError = async (context, error) => {
 };
 
 // Listen for incoming requests.
+// NOTE that each request can probably be considered a turn
 server.post('/api/messages', (req, res) => {
     adapter.processActivity(req, res, async (context) => {
+        // NOTE that you can perform pre-bot-turn actions on state here,
+        // by "get"ing the cached instance that was loaded during middleware
+
+        // Perform bot turn
         // Route to main dialog.
         await pizzaBot.onTurn(context);
+
+        // NOTE that you can perform post-bot-turn actions on state here
     });
 });
 

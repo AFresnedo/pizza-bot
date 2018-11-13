@@ -36,7 +36,7 @@ class PizzaBot {
       await turnContext.sendActivity(`You said "${turnContext.activity.text}"`);
     // Perform convo update logic, if that type of event is detected
     } else if (turnContext.activity.type === ActivityTypes.ConversationUpdate) {
-      // For every new user user, prompt them with new user message
+      // For every member in conversation, welcome them if new
       for (let e of turnContext.activity.membersAdded) {
         // TODO Prompt with welcome message, if user is a first time user
 
