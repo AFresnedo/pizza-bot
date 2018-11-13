@@ -49,10 +49,18 @@ class PizzaBot {
         } else if (turnContext.activity.type === ActivityTypes.ConversationUpdate) {
             // For every member in conversation, welcome them if new
             for (let e of turnContext.activity.membersAdded) {
-                // TODO Prompt with welcome message, if user is a first time user
-                // TODO Else greet them, if they are simply joining convo
+                // TODO prompt with welcome message, if user is a first time user
+                if (false) {}
+                // Else greet them, if they are simply joining convo
+                // NOTE that conditional relies on conversationUpdate activity
+                // not being sent to member joining channel
+                else if (e.id !== turnContext.activity.recipient.id) {
+                    await turnContext.sendActivity('Thanks for coming back!');
+                }
+                else {
+                    await turnContext.sendActivity('Unhandled Conversation Update Detected');
+                }
             }
-            await turnContext.sendActivity('Conversation Updated');
         } else {
             await turnContext.sendActivity(`[${turnContext.activity.type} event detected]`);
         }
