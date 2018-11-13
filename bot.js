@@ -17,6 +17,7 @@ class PizzaBot {
      * @param {UserState} state containing user-specific information
      */
     constructor(conversationState, userState) {
+        // TODO create a userState property with order history
         // Create a boolean to indicate if the user is brand new to the bot
         this.newUserProperty = userState.createProperty(NEW_USER);
         // Add given user state to this PizzaBot instance
@@ -33,20 +34,22 @@ class PizzaBot {
     async onTurn(turnContext) {
         // Perform message handling logic, if that type of event is detected
         if (turnContext.activity.type === ActivityTypes.Message) {
-            await turnContext.sendActivity(`You said "${turnContext.activity.text}"`);
-            // Perform convo update logic, if that type of event is detected
+            let count = await this.countProperty.get(turnContext)
+            // if count is undefined: set to 1, else increment by 1
+            count = count === undefined ? 1 : ++count;
+            await turnContext.sendActivity(`${count}: You said "${turnContext.activity.text}"`);
+        // Perform convo update logic, if that type of event is detected
         } else if (turnContext.activity.type === ActivityTypes.ConversationUpdate) {
             // For every member in conversation, welcome them if new
             for (let e of turnContext.activity.membersAdded) {
                 // TODO Prompt with welcome message, if user is a first time user
+                // TODO Else greet them, if they are simply joining convo
 
             }
             await turnContext.sendActivity('Conversation Updated');
         } else {
             await turnContext.sendActivity(`[${turnContext.activity.type} event detected]`);
         }
-        // Save state changes
-        await this.conversationState.saveChanges(turnContext);
     }
 }
 
