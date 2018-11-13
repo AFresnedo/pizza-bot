@@ -41,7 +41,10 @@ class PizzaBot {
             let count = await this.turnCountProperty.get(turnContext)
             // if count is undefined: set to 1, else increment by 1
             count = count === undefined ? 1 : ++count;
+            // echo the user, with the turn count included
             await turnContext.sendActivity(`${count}: You said "${turnContext.activity.text}"`);
+            // set the turn count property with the new value
+            await this.turnCountProperty.set(count);
         // Perform convo update logic, if that type of event is detected
         } else if (turnContext.activity.type === ActivityTypes.ConversationUpdate) {
             // For every member in conversation, welcome them if new
@@ -54,9 +57,6 @@ class PizzaBot {
         } else {
             await turnContext.sendActivity(`[${turnContext.activity.type} event detected]`);
         }
-        // TODO determine why this is necessary if conversation is being
-        // autosaved in middleware process
-        await this.conversationState.saveChanges(turnContext);
     }
 }
 
