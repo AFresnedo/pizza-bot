@@ -39,17 +39,17 @@ class PizzaBot {
         if (turnContext.activity.type === ActivityTypes.Message) {
             // TODO determine specifics of what is being read here
             let count = await this.turnCountProperty.get(turnContext)
-            // if count is undefined: set to 1, else increment by 1
+            // If count is undefined: set to 1, else increment by 1
             count = count === undefined ? 1 : ++count;
-            // echo the user, with the turn count included
+            // Echo the user, with the turn count included
             await turnContext.sendActivity(`${count}: You said "${turnContext.activity.text}"`);
-            // set the turn count property with the new value
+            // Set the turn count property with the new value
             await this.turnCountProperty.set(turnContext, count);
         // Perform convo update logic, if that type of event is detected
         } else if (turnContext.activity.type === ActivityTypes.ConversationUpdate) {
-            // For every member in conversation, welcome them if new
+            // For every member in conversation: welcome them, if they just joined
             for (let e of turnContext.activity.membersAdded) {
-                // TODO prompt with welcome message, if user is a first time user
+                // TODO prompt with first time welcome msg, if user is a first time user
                 if (false) {}
                 // Else greet them, if they are simply joining convo
                 // NOTE that conditional relies on conversationUpdate activity
