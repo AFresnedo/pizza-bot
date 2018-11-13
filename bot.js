@@ -9,6 +9,7 @@ const { ActivityTypes } = require('botbuilder');
  */
 const NEW_USER = 'newUserProperty';
 const GREETED_USER = 'greetUserProperty';
+const TURN_COUNT = 'turnCountProperty';
 
 class PizzaBot {
     /**
@@ -24,6 +25,8 @@ class PizzaBot {
         this.userState = userState;
         // Create a boolean to track if a user has been greeted in convo yet
         this.greetProperty = conversationState.createProperty(GREETED_USER);
+        // Create an integer to track turn count
+        this.turnCountProperty = conversationState.createProperty(TURN_COUNT);
         // Add given conversation state to this PizzaBot instance
         this.conversationState = conversationState;
     }
@@ -34,7 +37,7 @@ class PizzaBot {
     async onTurn(turnContext) {
         // Perform message handling logic, if that type of event is detected
         if (turnContext.activity.type === ActivityTypes.Message) {
-            let count = await this.countProperty.get(turnContext)
+            let count = await this.turnCountProperty.get(turnContext)
             // if count is undefined: set to 1, else increment by 1
             count = count === undefined ? 1 : ++count;
             await turnContext.sendActivity(`${count}: You said "${turnContext.activity.text}"`);
