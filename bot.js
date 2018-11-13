@@ -44,7 +44,7 @@ class PizzaBot {
             // echo the user, with the turn count included
             await turnContext.sendActivity(`${count}: You said "${turnContext.activity.text}"`);
             // set the turn count property with the new value
-            await this.turnCountProperty.set(count);
+            await this.turnCountProperty.set(turnContext, count);
         // Perform convo update logic, if that type of event is detected
         } else if (turnContext.activity.type === ActivityTypes.ConversationUpdate) {
             // For every member in conversation, welcome them if new
