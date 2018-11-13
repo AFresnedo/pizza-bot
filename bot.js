@@ -37,6 +37,7 @@ class PizzaBot {
     async onTurn(turnContext) {
         // Perform message handling logic, if that type of event is detected
         if (turnContext.activity.type === ActivityTypes.Message) {
+            // TODO determine specifics of what is being read here
             let count = await this.turnCountProperty.get(turnContext)
             // if count is undefined: set to 1, else increment by 1
             count = count === undefined ? 1 : ++count;
@@ -53,6 +54,9 @@ class PizzaBot {
         } else {
             await turnContext.sendActivity(`[${turnContext.activity.type} event detected]`);
         }
+        // TODO determine why this is necessary if conversation is being
+        // autosaved in middleware process
+        await this.conversationState.saveChanges(turnContext);
     }
 }
 
