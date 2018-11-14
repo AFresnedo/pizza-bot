@@ -3,13 +3,18 @@
 
 const { ActivityTypes } = require('botbuilder');
 
-/**
- *
- * Property names for all PizzaBot states
- */
+//
+// Property names for all PizzaBot states
+//
 const NEW_USER = 'recurringUserProperty';
 const TURN_COUNT = 'turnCountProperty';
 const DIALOG_STATE_PROPERTY = 'dialogStateProperty';
+
+//
+// Prompt names for all dialog prompts
+//
+const CHOOSE_PIZZA_TYPE_PROMPT = 'choosePizzaTypePrompt';
+const CHOOSE_TOPPINGS_PROMPT = 'chooseToppingsPrompt';
 
 class PizzaBot {
     /**
@@ -35,6 +40,14 @@ class PizzaBot {
         //
         // Setup ordering pizza waterfall dialog
         //
+
+        // Create dialog set (data structure for storing and "active"ating dialogs)
+        this.dialogs = new DialogSet(this.dialogState);
+
+        // Define prompts available to the bot, for more information refer to:
+        // https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-prompts?view=azure-bot-service-4.0&tabs=csharp
+        this.dialogs.add(new ChoicePrompt(CHOOSE_PIZZA_TYPE_PROMPT));
+        this.dialogs.add(new ChoicePrompt(CHOOSE_TOPPINGS_PROMPT));
 
     }
     /**
