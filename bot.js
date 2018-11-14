@@ -9,6 +9,7 @@ const { ActivityTypes } = require('botbuilder');
  */
 const NEW_USER = 'recurringUserProperty';
 const TURN_COUNT = 'turnCountProperty';
+const DIALOG_STATE_PROPERTY = 'dialogStateProperty';
 
 class PizzaBot {
     /**
@@ -17,15 +18,24 @@ class PizzaBot {
      * @param {UserState} state containing user-specific information
      */
     constructor(conversationState, userState) {
+        // Add given conversation state to this PizzaBot instance
+        this.conversationState = conversationState;
+        // Add given user state to this PizzaBot instance
+        this.userState = userState;
         // TODO create a userState property with order history
         // Create a boolean to indicate if the user is brand new to the bot
         this.recurringUserProperty = userState.createProperty(NEW_USER);
-        // Add given user state to this PizzaBot instance
-        this.userState = userState;
         // Create an integer to track turn count
         this.turnCountProperty = conversationState.createProperty(TURN_COUNT);
-        // Add given conversation state to this PizzaBot instance
-        this.conversationState = conversationState;
+        // Create a dialog state property (provides Accessor used by DialogSet)
+        // for more information, refer to:
+        // https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-dialog-state?view=azure-bot-service-4.0
+        this.dialogState = this.conversationState.createProperty(DIALOG_STATE_PROPERTY);
+
+        //
+        // Setup ordering pizza waterfall dialog
+        //
+
     }
     /**
      *
