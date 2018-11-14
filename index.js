@@ -104,8 +104,8 @@ adapter.onTurnError = async (context, error) => {
 };
 
 // Listen for incoming requests.
-// NOTE that each request can probably be considered a turn
 server.post('/api/messages', (req, res) => {
+    // Perform a turn: middleware intro -> bot turn logic -> middleware outro
     adapter.processActivity(req, res, async (context) => {
         // NOTE that you can perform pre-bot-turn actions on state here, by "get"ing the cached
         // instance that was loaded during middleware

@@ -58,7 +58,7 @@ class PizzaBot {
                 }
                 // Else greet them, if they are joining the conversation
                 // NOTE that this conditional relies on "join channel" conversationUpdate activity
-                // not being sent to the member joining channel
+                // not being sent to the member joining the channel
                 else if (e.id !== turnContext.activity.recipient.id) {
                   await turnContext.sendActivity(`Greetings ${e.name}!`);
                 }
