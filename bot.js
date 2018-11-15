@@ -4,17 +4,29 @@
 const { ActivityTypes } = require('botbuilder');
 
 //
-// Property names for all PizzaBot states
+// Property names for all PizzaBot states... why are these global constants? Is it wet otherwise?
 //
 const NEW_USER = 'recurringUserProperty';
 const TURN_COUNT = 'turnCountProperty';
 const DIALOG_STATE_PROPERTY = 'dialogStateProperty';
 
 //
-// Prompt names for all dialog prompts
+// Prompt names for all dialog prompts... why are these global constants? Is it wet otherwise?
 //
 const CHOOSE_PIZZA_TYPE_PROMPT = 'choosePizzaTypePrompt';
 const CHOOSE_TOPPINGS_PROMPT = 'chooseToppingsPrompt';
+
+//
+// TODO remove from global scope, only used once: Prompt options
+//
+const SIZE_CHOICES = ['small', 'medium', 'large'];
+const CRUST_CHOICES = ['regular', 'thin'];
+const TOPPINGS_CHOICES = ['cheese', 'pepperoni', 'meaty', 'hawaiian'];
+
+//
+// Default values for objects stored in state
+//
+const ORDER_DEFAULT = { size: null, crust: null, toppings: null };
 
 class PizzaBot {
     /**
@@ -59,7 +71,7 @@ class PizzaBot {
         if (turnContext.activity.type === ActivityTypes.Message) {
             // Get cached property of conversation state relevant to turnContext
             let count = await this.turnCountProperty.get(turnContext)
-            // If count is undefined: set to 1, else increment by 1
+            // If count is undefined (value not found in storage): set to 1, else increment by 1
             count = count === undefined ? 1 : ++count;
             // Echo the user, with the turn count included
             await turnContext.sendActivity(`${count}: You said "${turnContext.activity.text}"`);
