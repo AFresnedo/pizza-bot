@@ -8,7 +8,8 @@ const { ActivityTypes } = require('botbuilder');
 //
 const NEW_USER = 'recurringUserProperty';
 const TURN_COUNT = 'turnCountProperty';
-const DIALOG_STATE_PROPERTY = 'dialogStateProperty';
+const DIALOG_STATE = 'dialogStateProperty';
+const ORDER = 'orderProperty';
 
 //
 // Prompt names for all dialog prompts... why are these global constants? Is it wet otherwise?
@@ -37,25 +38,23 @@ class PizzaBot {
     constructor(conversationState, userState) {
         // Add given conversation state to this PizzaBot instance
         this.conversationState = conversationState;
-        // Add given user state to this PizzaBot instance
-        this.userState = userState;
-        // TODO create a userState property with order history
-        // Create a boolean to indicate if the user is brand new to the bot
-        this.recurringUserProperty = userState.createProperty(NEW_USER);
         // Create an integer to track turn count
         this.turnCountProperty = conversationState.createProperty(TURN_COUNT);
+        // Create current state of pizza order (storage and access interface)
+        this.orderProperty = conversationState.createProperty(ORDER);
+
+        // Add given user state to this PizzaBot instance
+        this.userState = userState;
+        // Create a boolean to indicate if the user is brand new to the bot
+        this.recurringUserProperty = userState.createProperty(NEW_USER);
+        // TODO create a userState property with order history
+
         // Create a dialog state property (provides Accessor used by DialogSet)
         // for more information, refer to:
         // https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-dialog-state?view=azure-bot-service-4.0
-        this.dialogState = this.conversationState.createProperty(DIALOG_STATE_PROPERTY);
-
-        //
-        // Setup ordering pizza waterfall dialog
-        //
-
+        this.dialogState = this.conversationState.createProperty(DIALOG_STATE);
         // Create dialog set (data structure for storing and "active"ating dialogs)
         this.dialogs = new DialogSet(this.dialogState);
-
         // Define prompts available to the bot, for more information refer to:
         // https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-prompts?view=azure-bot-service-4.0&tabs=csharp
         this.dialogs.add(new ChoicePrompt(CHOOSE_PIZZA_TYPE_PROMPT));
