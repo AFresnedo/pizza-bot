@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 const { ActivityTypes } = require('botbuilder');
+const { ChoicePrompt, DialogSet, WaterfallDialog } = require('botbuilder-dialogs');
 
 //
 // Property names for all PizzaBot states... why are these global constants? Is it wet otherwise?
