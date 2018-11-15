@@ -65,17 +65,15 @@ class PizzaBot {
      * @param {TurnContext} on turn context object.
      */
     async onTurn(turnContext) {
+        // Get value of turn property from cached conversation state
+        let count = await this.turnCountProperty.get(turnContext)
+        // If count is undefined (value not found in storage): set to 1, else increment by 1
+        count = count === undefined ? 1 : ++count;
+        // Set the turn count property with the new value
+        await this.turnCountProperty.set(turnContext, count);
         // Perform message handling logic, if that type of event is detected
         if (turnContext.activity.type === ActivityTypes.Message) {
-
-            // Get value of message-based-turn property from cached conversation state
-            let count = await this.turnCountProperty.get(turnContext)
-            // If count is undefined (value not found in storage): set to 1, else increment by 1
-            count = count === undefined ? 1 : ++count;
-            // Set the message-based-turn count property with the new value
-            await this.turnCountProperty.set(turnContext, count);
-
-            // Echo the user, with the message-based-turn count included
+            // Echo the user, with the turn count included
             await turnContext.sendActivity(`${count}: You said "${turnContext.activity.text}"`);
         // Perform convo update logic, if that type of event is detected
         } else if (turnContext.activity.type === ActivityTypes.ConversationUpdate) {
