@@ -56,10 +56,11 @@ class PizzaBot {
         this.dialogState = this.conversationState.createProperty(DIALOG_STATE);
         // Create dialog set (data structure for storing and "active"ating dialogs)
         this.dialogs = new DialogSet(this.dialogState);
-        // Define prompts available to the bot, for more information refer to:
+        // Define and add prompts available to the bot, for more information refer to:
         // https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-prompts?view=azure-bot-service-4.0&tabs=csharp
         this.dialogs.add(new ChoicePrompt(CHOOSE_PIZZA_TYPE_PROMPT));
-        this.dialogs.add(new ChoicePrompt(CHOOSE_TOPPINGS_PROMPT));
+        // TODO Define and add steps (filled-in prompts) for waterfall
+        // TODO Define and add waterfall
     }
     /**
      *
@@ -75,7 +76,7 @@ class PizzaBot {
         // Perform message handling logic, if that type of event is detected
         if (turnContext.activity.type === ActivityTypes.Message) {
             // Echo the user, with the turn count included
-            await turnContext.sendActivity(`${count}: You said "${turnContext.activity.text}"`);
+            await turnContext.sendActivity(`Turn ${count}: You said "${turnContext.activity.text}"`);
         // Perform convo update logic, if that type of event is detected
         } else if (turnContext.activity.type === ActivityTypes.ConversationUpdate) {
             // Identify if a user is new to the bot and, if so, mark them as no longer new
