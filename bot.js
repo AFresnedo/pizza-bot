@@ -38,7 +38,7 @@ class PizzaBot {
     constructor(conversationState, userState) {
         // Add given conversation state to this PizzaBot instance
         this.conversationState = conversationState;
-        // Create an integer to track turn count
+        // Create an integer to track message-based-turn count
         this.turnCountProperty = conversationState.createProperty(TURN_COUNT);
         // Create current state of pizza order (storage and access interface)
         this.orderProperty = conversationState.createProperty(ORDER);
@@ -59,7 +59,6 @@ class PizzaBot {
         // https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-prompts?view=azure-bot-service-4.0&tabs=csharp
         this.dialogs.add(new ChoicePrompt(CHOOSE_PIZZA_TYPE_PROMPT));
         this.dialogs.add(new ChoicePrompt(CHOOSE_TOPPINGS_PROMPT));
-
     }
     /**
      *
@@ -68,14 +67,16 @@ class PizzaBot {
     async onTurn(turnContext) {
         // Perform message handling logic, if that type of event is detected
         if (turnContext.activity.type === ActivityTypes.Message) {
-            // Get cached property of conversation state relevant to turnContext
+
+            // Get value of message-based-turn property from cached conversation state
             let count = await this.turnCountProperty.get(turnContext)
             // If count is undefined (value not found in storage): set to 1, else increment by 1
             count = count === undefined ? 1 : ++count;
-            // Echo the user, with the turn count included
-            await turnContext.sendActivity(`${count}: You said "${turnContext.activity.text}"`);
-            // Set the turn count property with the new value
+            // Set the message-based-turn count property with the new value
             await this.turnCountProperty.set(turnContext, count);
+
+            // Echo the user, with the message-based-turn count included
+            await turnContext.sendActivity(`${count}: You said "${turnContext.activity.text}"`);
         // Perform convo update logic, if that type of event is detected
         } else if (turnContext.activity.type === ActivityTypes.ConversationUpdate) {
             // Identify if a user is new to the bot and, if so, mark them as no longer new
