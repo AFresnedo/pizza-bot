@@ -58,6 +58,7 @@ class PizzaBot {
         this.dialogs = new DialogSet(this.dialogState);
         // Define and add prompts available to the bot, for more information refer to:
         // https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-prompts?view=azure-bot-service-4.0&tabs=csharp
+        // Choice prompt ChoicesFactory https://github.com/Microsoft/botbuilder-js/blob/master/libraries/botbuilder-dialogs/src/choices/choiceFactory.ts
         this.dialogs.add(new ChoicePrompt(CHOOSE_PIZZA_TYPE_PROMPT));
         // TODO Define and add steps (filled-in prompts) for waterfall
         // TODO Define and add waterfall
