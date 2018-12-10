@@ -60,20 +60,29 @@ class PizzaBot {
         // https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-prompts?view=azure-bot-service-4.0&tabs=csharp
         // Choice prompt ChoicesFactory https://github.com/Microsoft/botbuilder-js/blob/master/libraries/botbuilder-dialogs/src/choices/choiceFactory.ts
         this.dialogs.add(new ChoicePrompt(CHOOSE_PIZZA_TYPE_PROMPT));
+        this.dialogs.add(new ChoicePrompt(CHOOSE_TOPPINGS_PROMPT));
         // TODO Define and add steps (filled-in prompts) for waterfall
-        // TODO Define and add waterfall
+        async pickCrust(step) {
+            'what crust do you want?'
+        }
+        // TODO Define and add ordering waterfall
+        this.dialogs.add(new WaterfallDialog(ORDER_PIZZA, [
+            this.pickCrust.bind(this),
+            this.pickToppings.bind(this)
+        ]));
+        // TODO create a dialog for toppings, for ordering dialog
+
     }
     /**
      *
      * @param {TurnContext} on turn context object.
      */
+    // TODO repeat the topping dialog
+    // https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-concept-dialog?view=azure-bot-service-4.0
+    // has a loop step example:
+    // https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-dialog-manage-complex-conversation-flow?view=azure-bot-service-4.0&tabs=javascript
+    // onTurn is often referred to as the bot turn handler in the docs
     async onTurn(turnContext) {
-        // Get value of turn property from cached conversation state
-        let count = await this.turnCountProperty.get(turnContext)
-        // If count is undefined (value not found in storage): set to 1, else increment by 1
-        count = count === undefined ? 1 : ++count;
-        // Set the turn count property with the new value
-        await this.turnCountProperty.set(turnContext, count);
         // Perform message handling logic, if that type of event is detected
         if (turnContext.activity.type === ActivityTypes.Message) {
             // Echo the user, with the turn count included
