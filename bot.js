@@ -5,7 +5,7 @@ const { ActivityTypes } = require('botbuilder');
 const { ChoicePrompt, DialogSet, WaterfallDialog } = require('botbuilder-dialogs');
 
 //
-// Property names for all PizzaBot states... why are these global constants? Is it wet otherwise?
+// Property IDs for all PizzaBot states... why are these global constants? Is it wet otherwise?
 //
 const NEW_USER = 'recurringUserProperty';
 const TURN_COUNT = 'turnCountProperty';
@@ -13,10 +13,16 @@ const DIALOG_STATE = 'dialogStateProperty';
 const ORDER = 'orderProperty';
 
 //
-// Prompt names for all dialog prompts... why are these global constants? Is it wet otherwise?
+// Prompt IDs for all dialog prompts... why are these global constants? Is it wet otherwise?
+// They're probably global because they're the IDs of that specific prompt, so
+// if that prompt is used more than once the ID will be used more than once and
+// this global constant definition seems like good signaling for a unique ID
+// that may be used more than once
 //
-const CHOOSE_PIZZA_TYPE_PROMPT = 'choosePizzaTypePrompt';
+const CHOOSE_SIZE_PROMPT = 'chooseSizePrompt';
+const CHOOSE_CRUST_PROMPT = 'chooseCrustPrompt';
 const CHOOSE_TOPPINGS_PROMPT = 'chooseToppingsPrompt';
+const ORDER_PIZZA_WATERFALL = 'orderPizzaWaterfall';
 
 //
 // TODO remove from global scope, only used once: Prompt options
@@ -59,19 +65,33 @@ class PizzaBot {
         // Define and add prompts available to the bot, for more information refer to:
         // https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-prompts?view=azure-bot-service-4.0&tabs=csharp
         // Choice prompt ChoicesFactory https://github.com/Microsoft/botbuilder-js/blob/master/libraries/botbuilder-dialogs/src/choices/choiceFactory.ts
-        this.dialogs.add(new ChoicePrompt(CHOOSE_PIZZA_TYPE_PROMPT));
+        this.dialogs.add(new ChoicePrompt(CHOOSE_CRUST_PROMPT));
         this.dialogs.add(new ChoicePrompt(CHOOSE_TOPPINGS_PROMPT));
-        // TODO Define and add steps (filled-in prompts) for waterfall
-        async pickCrust(step) {
-            'what crust do you want?'
-        }
         // TODO Define and add ordering waterfall
-        this.dialogs.add(new WaterfallDialog(ORDER_PIZZA, [
+        this.dialogs.add(new WaterfallDialog(ORDER_PIZZA_WATERFALL, [
             this.pickCrust.bind(this),
             this.pickToppings.bind(this)
         ]));
         // TODO create a dialog for toppings, for ordering dialog
 
+        // TODO Define and add steps (filled-in prompts) for waterfalls
+
+    }
+
+    // These are dialogs, which define the steps of the waterfalls
+    async pickCrust(step) {
+        return await step.prompt(CHOOSE_CRUST_PROMPT, {
+            prompt: 'What crust do you prefer?',
+            retryPrompt: 'Please use the buttons to reply.',
+            choices: [ 'regular', 'thin', 'deep dish' ]
+        });
+    }
+    async pickToppings(step) {
+        return await step.prompt(CHOOSE_TOPPINGS_PROMPT, {
+            prompt: 'What toppings shall I add?',
+            retryPrompt: 'Please use the buttons to reply.',
+            choices: ['no cheese', 'pepperoni', 'sausage', 'salami', 'hawaiian']
+        });
     }
     /**
      *
@@ -85,8 +105,15 @@ class PizzaBot {
     async onTurn(turnContext) {
         // Perform message handling logic, if that type of event is detected
         if (turnContext.activity.type === ActivityTypes.Message) {
-            // Echo the user, with the turn count included
-            await turnContext.sendActivity(`Turn ${count}: You said "${turnContext.activity.text}"`);
+            // Create the dc with the current turn's information
+            const dc = await this.dialogs.createContext(turnContext);
+
+            // Resume dialog from stack, this is necessary for progressing
+            await dc.continueDialog();
+
+            if (!turnContext.responded) {
+                await dc.beginDialog(ORDER_PIZZA_WATERFALL);
+            }
         // Perform convo update logic, if that type of event is detected
         } else if (turnContext.activity.type === ActivityTypes.ConversationUpdate) {
             // Identify if a user is new to the bot and, if so, mark them as no longer new
