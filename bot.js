@@ -2,13 +2,39 @@
 // Licensed under the MIT License.
 
 const { ActivityTypes } = require('botbuilder');
+const { ChoicePrompt, DialogSet, WaterfallDialog } = require('botbuilder-dialogs');
 
-/**
- *
- * Property names for all PizzaBot states
- */
+//
+// Property IDs for all PizzaBot states... why are these global constants? Is it wet otherwise?
+//
 const NEW_USER = 'recurringUserProperty';
 const TURN_COUNT = 'turnCountProperty';
+const DIALOG_STATE = 'dialogStateProperty';
+const ORDER = 'orderProperty';
+
+//
+// Prompt IDs for all dialog prompts... why are these global constants? Is it wet otherwise?
+// They're probably global because they're the IDs of that specific prompt, so
+// if that prompt is used more than once the ID will be used more than once and
+// this global constant definition seems like good signaling for a unique ID
+// that may be used more than once
+//
+const CHOOSE_SIZE_PROMPT = 'chooseSizePrompt';
+const CHOOSE_CRUST_PROMPT = 'chooseCrustPrompt';
+const CHOOSE_TOPPINGS_PROMPT = 'chooseToppingsPrompt';
+const ORDER_PIZZA_WATERFALL = 'orderPizzaWaterfall';
+
+//
+// TODO remove from global scope, only used once: Prompt options
+//
+const SIZE_CHOICES = ['small', 'medium', 'large'];
+const CRUST_CHOICES = ['regular', 'thin'];
+const TOPPINGS_CHOICES = ['cheese', 'pepperoni', 'meaty', 'hawaiian'];
+
+//
+// Default values for objects stored in state
+//
+const ORDER_DEFAULT = { size: null, crust: null, toppings: null };
 
 class PizzaBot {
     /**
@@ -17,31 +43,77 @@ class PizzaBot {
      * @param {UserState} state containing user-specific information
      */
     constructor(conversationState, userState) {
-        // TODO create a userState property with order history
-        // Create a boolean to indicate if the user is brand new to the bot
-        this.recurringUserProperty = userState.createProperty(NEW_USER);
-        // Add given user state to this PizzaBot instance
-        this.userState = userState;
-        // Create an integer to track turn count
-        this.turnCountProperty = conversationState.createProperty(TURN_COUNT);
         // Add given conversation state to this PizzaBot instance
         this.conversationState = conversationState;
+        // Create an integer to track message-based-turn count
+        this.turnCountProperty = conversationState.createProperty(TURN_COUNT);
+        // Create current state of pizza order (storage and access interface)
+        this.orderProperty = conversationState.createProperty(ORDER);
+
+        // Add given user state to this PizzaBot instance
+        this.userState = userState;
+        // Create a boolean to indicate if the user is brand new to the bot
+        this.recurringUserProperty = userState.createProperty(NEW_USER);
+        // TODO create a userState property with order history
+
+        // Create a dialog state property (provides Accessor used by DialogSet)
+        // for more information, refer to:
+        // https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-dialog-state?view=azure-bot-service-4.0
+        this.dialogState = this.conversationState.createProperty(DIALOG_STATE);
+        // Create dialog set (data structure for storing and "active"ating dialogs)
+        this.dialogs = new DialogSet(this.dialogState);
+        // Define and add prompts available to the bot, for more information refer to:
+        // https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-prompts?view=azure-bot-service-4.0&tabs=csharp
+        // Choice prompt ChoicesFactory https://github.com/Microsoft/botbuilder-js/blob/master/libraries/botbuilder-dialogs/src/choices/choiceFactory.ts
+        this.dialogs.add(new ChoicePrompt(CHOOSE_CRUST_PROMPT));
+        this.dialogs.add(new ChoicePrompt(CHOOSE_TOPPINGS_PROMPT));
+        // TODO Define and add ordering waterfall
+        this.dialogs.add(new WaterfallDialog(ORDER_PIZZA_WATERFALL, [
+            this.pickCrust.bind(this),
+            this.pickToppings.bind(this)
+        ]));
+        // TODO create a dialog for toppings, for ordering dialog
+
+        // TODO Define and add steps (filled-in prompts) for waterfalls
+
+    }
+
+    // These are dialogs, which define the steps of the waterfalls
+    async pickCrust(step) {
+        return await step.prompt(CHOOSE_CRUST_PROMPT, {
+            prompt: 'What crust do you prefer?',
+            retryPrompt: 'Please use the buttons to reply.',
+            choices: [ 'regular', 'thin', 'deep dish' ]
+        });
+    }
+    async pickToppings(step) {
+        return await step.prompt(CHOOSE_TOPPINGS_PROMPT, {
+            prompt: 'What toppings shall I add?',
+            retryPrompt: 'Please use the buttons to reply.',
+            choices: ['no cheese', 'pepperoni', 'sausage', 'salami', 'hawaiian']
+        });
     }
     /**
      *
      * @param {TurnContext} on turn context object.
      */
+    // TODO repeat the topping dialog
+    // https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-concept-dialog?view=azure-bot-service-4.0
+    // has a loop step example:
+    // https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-dialog-manage-complex-conversation-flow?view=azure-bot-service-4.0&tabs=javascript
+    // onTurn is often referred to as the bot turn handler in the docs
     async onTurn(turnContext) {
         // Perform message handling logic, if that type of event is detected
         if (turnContext.activity.type === ActivityTypes.Message) {
-            // Get cached property of conversation state relevant to turnContext
-            let count = await this.turnCountProperty.get(turnContext)
-            // If count is undefined: set to 1, else increment by 1
-            count = count === undefined ? 1 : ++count;
-            // Echo the user, with the turn count included
-            await turnContext.sendActivity(`${count}: You said "${turnContext.activity.text}"`);
-            // Set the turn count property with the new value
-            await this.turnCountProperty.set(turnContext, count);
+            // Create the dc with the current turn's information
+            const dc = await this.dialogs.createContext(turnContext);
+
+            // Resume dialog from stack, this is necessary for progressing
+            await dc.continueDialog();
+
+            if (!turnContext.responded) {
+                await dc.beginDialog(ORDER_PIZZA_WATERFALL);
+            }
         // Perform convo update logic, if that type of event is detected
         } else if (turnContext.activity.type === ActivityTypes.ConversationUpdate) {
             // Identify if a user is new to the bot and, if so, mark them as no longer new
