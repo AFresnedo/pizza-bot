@@ -87,6 +87,7 @@ class PizzaBot {
         });
     }
     async pickToppings(step) {
+        return await step.context.sendActivity('Your crust is: ' + step.result.value);
         return await step.prompt(CHOOSE_TOPPINGS_PROMPT, {
             prompt: 'What toppings shall I add?',
             retryPrompt: 'Please use the buttons to reply.',
