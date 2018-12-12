@@ -23,18 +23,7 @@ const CHOOSE_SIZE_PROMPT = 'chooseSizePrompt';
 const CHOOSE_CRUST_PROMPT = 'chooseCrustPrompt';
 const CHOOSE_TOPPINGS_PROMPT = 'chooseToppingsPrompt';
 const ORDER_PIZZA_WATERFALL = 'orderPizzaWaterfall';
-
-//
-// TODO remove from global scope, only used once: Prompt options
-//
-const SIZE_CHOICES = ['small', 'medium', 'large'];
-const CRUST_CHOICES = ['regular', 'thin'];
-const TOPPINGS_CHOICES = ['cheese', 'pepperoni', 'meaty', 'hawaiian'];
-
-//
-// Default values for objects stored in state
-//
-const ORDER_DEFAULT = { size: null, crust: null, toppings: null };
+const SELECT_TOPPINGS_WATERFALL = 'selectToppingsWaterfall';
 
 class PizzaBot {
     /**
@@ -65,34 +54,51 @@ class PizzaBot {
         // Define and add prompts available to the bot, for more information refer to:
         // https://docs.microsoft.com/en-us/azure/bot-service/bot-builder-prompts?view=azure-bot-service-4.0&tabs=csharp
         // Choice prompt ChoicesFactory https://github.com/Microsoft/botbuilder-js/blob/master/libraries/botbuilder-dialogs/src/choices/choiceFactory.ts
+        this.dialogs.add(new ChoicePrompt(CHOOSE_SIZE_PROMPT));
         this.dialogs.add(new ChoicePrompt(CHOOSE_CRUST_PROMPT));
         this.dialogs.add(new ChoicePrompt(CHOOSE_TOPPINGS_PROMPT));
-        // TODO Define and add ordering waterfall
+        // The main ordering dialog
         this.dialogs.add(new WaterfallDialog(ORDER_PIZZA_WATERFALL, [
+            this.pickSize.bind(this),
             this.pickCrust.bind(this),
             this.pickToppings.bind(this)
         ]));
-        // TODO create a dialog for toppings, for ordering dialog
+        // Toppings selection is its own dialog so it may be repeated
+        this.dialogs.add(new WaterfallDialog(SELECT_TOPPINGS_WATERFALL, [
+            this.pickToppings.bind(this)
+        ]));
 
         // TODO Define and add steps (filled-in prompts) for waterfalls
 
     }
 
-    // These are dialogs, which define the steps of the waterfalls
+    // pickSize is expected to run once per order
+    async pickSize(step) {
+        await step.prompt(CHOOSE_SIZE_PROMPT, {
+            prompt: 'What size of pizza do you desire?',
+            retryPrompt: 'Please use the buttons to reply.',
+            choices: [ 'large', 'medium', 'small']
+        });
+    }
+
+    // pickCrust is expected to run once per order
     async pickCrust(step) {
-        return await step.prompt(CHOOSE_CRUST_PROMPT, {
+        await step.prompt(CHOOSE_CRUST_PROMPT, {
             prompt: 'What crust do you prefer?',
             retryPrompt: 'Please use the buttons to reply.',
             choices: [ 'regular', 'thin', 'deep dish' ]
         });
     }
+
+    // pickToppings is expected to run at least once per order
     async pickToppings(step) {
-        return await step.context.sendActivity('Your crust is: ' + step.result.value);
-        return await step.prompt(CHOOSE_TOPPINGS_PROMPT, {
+        await step.context.sendActivity('Your crust is: ' + step.result.value);
+        await step.prompt(CHOOSE_TOPPINGS_PROMPT, {
             prompt: 'What toppings shall I add?',
             retryPrompt: 'Please use the buttons to reply.',
             choices: ['no cheese', 'pepperoni', 'sausage', 'salami', 'hawaiian']
         });
+        await step.endDialog();
     }
     /**
      *
